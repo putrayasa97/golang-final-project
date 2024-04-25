@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./.env:/root/.env
+    environment:
+      - PORT=3000
+    depends_on:
+      - mysql
+    # command: go run main.go
+
+  mysql:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: sekolahbeta
+      MYSQL_USER: golang
+      MYSQL_PASSWORD: "gOLAng@123"
+      MYSQL_ROOT_PASSWORD: "gOLAng@123"
+    restart: unless-stopped
+    volumes:
+      - mysqldata:/var/lib/mysql
+    networks:
+      default:
+        aliases:
+          - db
+
+volumes:
+  mysqldata:
