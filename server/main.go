@@ -1,16 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"service/backup/databases/client/utils/logger"
 	"service/backup/databases/proto"
 	"service/backup/databases/server/config"
 	"service/backup/databases/server/controllers"
+	"service/backup/databases/server/model"
+	"service/backup/databases/server/utils"
 	"syscall"
 
 	"github.com/gofiber/fiber/v2"
@@ -36,8 +36,10 @@ func (s *FileUpload) UploadFile(stream proto.FileUpload_UploadFileServer) error 
 		return err
 	}
 	nameFile := firstChunk.GetNameFile()
+	nameBD := firstChunk.GetNameDb()
+
 	fileName := "upload/" + nameFile
-	logger.Info(fmt.Sprintln(nameFile))
+
 	file, err := os.Create(fileName)
 	if err != nil {
 		return err
@@ -59,6 +61,16 @@ func (s *FileUpload) UploadFile(stream proto.FileUpload_UploadFileServer) error 
 		if _, err := file.Write(chunk.GetZipFile()); err != nil {
 			return err
 		}
+	}
+
+	_, errCreateBckpDatabse := utils.InsertBckpDatabase(model.BckpDatabase{
+		DatabaseName: nameBD,
+		FileName:     nameFile,
+		FilePath:     fileName,
+	})
+
+	if errCreateBckpDatabse != nil {
+		return errCreateBckpDatabse
 	}
 
 	if err := stream.SendAndClose(&proto.UploadStatus{Success: true}); err != nil {

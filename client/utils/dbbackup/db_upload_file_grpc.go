@@ -52,7 +52,7 @@ func uploadFileGrpc(pathFile *model.PathFile, fileName model.NameFile) (string, 
 			break
 		}
 
-		if err := stream.Send(&proto.FileChunk{NameFile: fileName.NameFileZip, ZipFile: buf[:n]}); err != nil {
+		if err := stream.Send(&proto.FileChunk{NameFile: fileName.NameFileZip, NameDb: fileName.NameDatabaseFile, ZipFile: buf[:n]}); err != nil {
 			mErr = fmt.Sprintf("Error to send chunk  %s  , Error : %s\n", fileName.NameFileZip, err.Error())
 			return mErr, err
 		}

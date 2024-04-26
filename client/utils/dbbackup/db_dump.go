@@ -20,7 +20,7 @@ func dumpDatabase(pathFile *model.PathFile, db model.Database) (model.NameFile, 
 	file, err := os.Create(pathNameFileSql)
 	if err != nil {
 		mErr = fmt.Sprintf("Error creating file %s, Error: %s\n", pathNameFileSql, err.Error())
-		return model.NameFile{NameFileSql: nameFileSql}, mErr, err
+		return model.NameFile{NameFileSql: nameFileSql, NameDatabaseFile: db.DatabaseName}, mErr, err
 	}
 	defer file.Close()
 
@@ -30,7 +30,7 @@ func dumpDatabase(pathFile *model.PathFile, db model.Database) (model.NameFile, 
 	err = cmd.Run()
 	if err != nil {
 		mErr = fmt.Sprintf("Error running mysqldump %s, Error: %s\n", pathNameFileSql, err.Error())
-		return model.NameFile{NameFileSql: nameFileSql}, mErr, err
+		return model.NameFile{NameFileSql: nameFileSql, NameDatabaseFile: db.DatabaseName}, mErr, err
 	}
 
 	return model.NameFile{NameFileSql: nameFileSql, NameDatabaseFile: db.DatabaseName}, mErr, nil

@@ -10,7 +10,9 @@ service FileUpload {
 
 message FileChunk {
     string name_file = 1;
-    bytes zip_file = 2;
+    string name_db = 2;
+    bytes zip_file = 3;
+    
 }
 
 message UploadStatus {
