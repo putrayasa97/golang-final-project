@@ -15,7 +15,7 @@
 # PEM files
 *.pem
 
-upload/*
+upload
 
 # Binaries for programs and plugins
 *.exe

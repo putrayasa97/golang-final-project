@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+	"service/backup/databases/client/utils/logger"
 	"service/backup/databases/proto"
 	"service/backup/databases/server/config"
 	"service/backup/databases/server/controllers"
@@ -24,33 +26,46 @@ func InitEnv() {
 	}
 }
 
-type FileUpoad struct {
+type FileUpload struct {
 	proto.FileUploadServer
 }
 
-func (s *FileUpoad) UploadFile(stream proto.FileUpload_UploadFileServer) error {
-	// Temporary buffer to hold file chunks
-	fileName := ""
-	var file []byte
+func (s *FileUpload) UploadFile(stream proto.FileUpload_UploadFileServer) error {
+	firstChunk, err := stream.Recv()
+	if err != nil {
+		return err
+	}
+	nameFile := firstChunk.GetNameFile()
+	fileName := "upload/" + nameFile
+	logger.Info(fmt.Sprintln(nameFile))
+	file, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-	// Loop to receive file chunks
+	if _, err := file.Write(firstChunk.GetZipFile()); err != nil {
+		return err
+	}
+
 	for {
 		chunk, err := stream.Recv()
 		if err == io.EOF {
-			// End of file, save the file here
-			log.Println("File received, saving...")
-			// You can save 'file' to disk or wherever you want
-			return stream.SendAndClose(&proto.UploadStatus{Success: true})
+			break
 		}
 		if err != nil {
 			return err
 		}
-		if fileName == "" {
-			fileName = chunk.DbName
+		if _, err := file.Write(chunk.GetZipFile()); err != nil {
+			return err
 		}
-
-		file = append(file, chunk.ZipFile...)
 	}
+
+	if err := stream.SendAndClose(&proto.UploadStatus{Success: true}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func runFiberServer() {
@@ -71,7 +86,7 @@ func runFiberServer() {
 			err.Error())
 	}
 
-	_ = os.Mkdir("upload", 0777)
+	_ = os.MkdirAll("upload/", 0777)
 }
 
 func runGRPCServer() {
@@ -81,7 +96,7 @@ func runGRPCServer() {
 	}
 
 	s := grpc.NewServer()
-	proto.RegisterFileUploadServer(s, &FileUpoad{})
+	proto.RegisterFileUploadServer(s, &FileUpload{})
 	log.Println("Server started at :50051")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
@@ -89,17 +104,13 @@ func runGRPCServer() {
 }
 
 func main() {
-	// Buat channel untuk menangkap sinyal SIGINT (Ctrl+C) dan SIGTERM
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
-	// Jalankan gRPC server secara asinkron
 	go runGRPCServer()
 
-	// Jalankan Fiber server secara asinkron
 	go runFiberServer()
 
-	// Tunggu sinyal SIGINT atau SIGTERM
 	<-stop
 	log.Println("Shutting down servers...")
 }

@@ -143,7 +143,7 @@ func processUploadFile(fileNameCh <-chan model.NameFile, pathFile *model.PathFil
 	go func() {
 		defer close(uploadChan)
 		for fileName := range fileNameCh {
-			mErr, err := uploadFile(pathFile, fileName)
+			mErr, err := uploadFileGrpc(pathFile, fileName)
 			if err != nil {
 				logger.Error(mErr)
 			}
