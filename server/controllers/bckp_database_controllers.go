@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"errors"
-	"final-project/bckp-database/model"
-	"final-project/bckp-database/presenter"
-	"final-project/bckp-database/utils"
 	"fmt"
 	"mime/multipart"
+	"service/backup/databases/server/model"
+	"service/backup/databases/server/presenter"
+	"service/backup/databases/server/utils"
 	"strconv"
 	"strings"
 

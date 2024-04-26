@@ -1,7 +1,7 @@
 package presenter
 
 import (
-	"final-project/bckp-database/model"
+	"service/backup/databases/server/model"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

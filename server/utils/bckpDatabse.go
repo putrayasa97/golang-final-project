@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"final-project/bckp-database/config"
-	"final-project/bckp-database/model"
+	"service/backup/databases/server/config"
+	"service/backup/databases/server/model"
 	"time"
 )
 

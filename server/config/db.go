@@ -1,10 +1,10 @@
 package config
 
 import (
-	"final-project/bckp-database/model"
 	"fmt"
 	"log"
 	"os"
+	"service/backup/databases/server/model"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -46,7 +46,6 @@ func autoMigrate(db *gorm.DB) error {
 		&model.BckpDatabase{},
 		&model.Token{},
 	)
-
 
 	if err != nil {
 		return err

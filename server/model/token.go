@@ -10,7 +10,7 @@ import (
 type Token struct {
 	ID        uint      `gorm:"primarykey" json:"id"`
 	Value     uuid.UUID `gorm:"unique"`
-	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func (cr *Token) CreateToken(db *gorm.DB) error {
