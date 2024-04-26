@@ -2,14 +2,14 @@ package dbbackup
 
 import (
 	"bytes"
-	"cli-service/model"
-	"cli-service/utils/logger"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"service/backup/databases/client/model"
+	"service/backup/databases/client/utils/logger"
 )
 
 func uploadFile(pathFile *model.PathFile, fileName model.NameFile) (string, error) {

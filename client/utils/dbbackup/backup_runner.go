@@ -1,11 +1,11 @@
 package dbbackup
 
 import (
-	"cli-service/model"
-	"cli-service/utils/logger"
 	"encoding/json"
 	"fmt"
 	"os"
+	"service/backup/databases/client/model"
+	"service/backup/databases/client/utils/logger"
 	"sync"
 )
 

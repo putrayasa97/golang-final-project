@@ -2,10 +2,10 @@ package dbbackup
 
 import (
 	"archive/zip"
-	"cli-service/model"
 	"fmt"
 	"io"
 	"os"
+	"service/backup/databases/client/model"
 )
 
 func archiveDatabase(pathFile model.PathFile, fileName model.NameFile) (model.NameFile, string, error) {

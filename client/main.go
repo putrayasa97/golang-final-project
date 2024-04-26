@@ -1,11 +1,11 @@
 package main
 
 import (
-	"cli-service/utils/dbbackup"
-	"cli-service/utils/logger"
 	"fmt"
 	"os"
 	"os/signal"
+	"service/backup/databases/client/utils/dbbackup"
+	"service/backup/databases/client/utils/logger"
 	"syscall"
 
 	"github.com/joho/godotenv"

@@ -1,10 +1,10 @@
 package dbbackup
 
 import (
-	"cli-service/model"
 	"fmt"
 	"os"
 	"os/exec"
+	"service/backup/databases/client/model"
 	"time"
 
 	"github.com/google/uuid"

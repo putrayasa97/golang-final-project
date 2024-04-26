@@ -1,9 +1,9 @@
 package dbbackup
 
 import (
-	"cli-service/model"
 	"fmt"
 	"os"
+	"service/backup/databases/client/model"
 )
 
 func removeFile(pathFile *model.PathFile, nameFile model.NameFile) (string, error) {

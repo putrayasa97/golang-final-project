@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package fileupload;
+
+option go_package = "./proto";
+
+service FileUpload {
+    rpc uploadFile(stream FileChunk) returns (UploadStatus) {}
+}
+
+message FileChunk {
+    string db_name = 1;
+    bytes zip_file = 2;
+}
+
+message UploadStatus {
+    bool success = 1;
+}
