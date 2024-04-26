@@ -6,6 +6,7 @@ import (
 	"os"
 	"service/backup/databases/client/model"
 	"service/backup/databases/client/utils/logger"
+	"strings"
 	"sync"
 )
 
@@ -17,7 +18,7 @@ import (
 // TODO 5. Hapus file temporary sql dan zip ketik selesai proses upload
 // Proses ini menggunakan konsep Concurency: Pipeline Pattern
 
-func BackupRunner() {
+func BackupRunner(dbNamesStr string) {
 	pathFile := model.PathFile{
 		PathDBJson:  "databases.json",
 		PathFileSql: "temp/sql",
@@ -30,7 +31,7 @@ func BackupRunner() {
 	logger.Info(fmt.Sprintln("Mulai Proses Backup Databases ..."))
 
 	// get list databases
-	listDatabases := getListDB(&pathFile)
+	listDatabases := getListDB(&pathFile, dbNamesStr)
 
 	// Pipeline 1 DumpDatabases
 	var dumpDbChanTemp []<-chan model.NameFile
@@ -68,7 +69,7 @@ func BackupRunner() {
 }
 
 // fungsi untuk memanggil list database yg sudah telah terdaftar
-func getListDB(pathFile *model.PathFile) <-chan model.Database {
+func getListDB(pathFile *model.PathFile, dbNamesStr string) <-chan model.Database {
 	listDatabases := []model.Database{}
 	dbChan := make(chan model.Database)
 
@@ -90,11 +91,28 @@ func getListDB(pathFile *model.PathFile) <-chan model.Database {
 		return nil
 	}
 
+	dbNames := strings.Split(dbNamesStr, ",")
+
+	if dbNamesStr == "" {
+		go func() {
+			defer close(dbChan)
+			for _, db := range listDatabases {
+				dbChan <- db
+			}
+		}()
+		return dbChan
+	}
+
 	go func() {
+		defer close(dbChan)
 		for _, db := range listDatabases {
-			dbChan <- db
+			for _, dbName := range dbNames {
+				if db.DatabaseName == dbName {
+					dbChan <- db
+					break
+				}
+			}
 		}
-		close(dbChan)
 	}()
 
 	return dbChan
