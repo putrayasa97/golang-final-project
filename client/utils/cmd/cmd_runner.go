@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
 	"service/backup/databases/client/model"
 	"service/backup/databases/client/utils/dbbackup"
+	"service/backup/databases/client/utils/dbconfig"
 	"service/backup/databases/client/utils/logger"
 	"syscall"
 
@@ -15,33 +15,14 @@ import (
 )
 
 func CommandLine() {
+
 	var rootCmd = &cobra.Command{Use: "app"}
 
-	var cmdBackupDBList = &cobra.Command{
-		Use:   "backup-dblist",
-		Short: "Show list databases : backup-dblist",
+	var cmdBackupDB = &cobra.Command{
+		Use:   "backup-db",
+		Short: "Run backup : backup-db",
 		Run: func(cmd *cobra.Command, args []string) {
-			pathFile := model.PathFile{
-				PathDBJson: "databases.json",
-			}
-
-			fmt.Println("List Databases")
-
-			listDatabases := []model.Database{}
-
-			dataJson, err := os.ReadFile(pathFile.PathDBJson)
-			if err != nil {
-				fmt.Printf("Error: %s\n", err.Error())
-			}
-
-			err = json.Unmarshal(dataJson, &listDatabases)
-			if err != nil {
-				fmt.Printf("Error: %s\n", err.Error())
-			}
-
-			for _, value := range listDatabases {
-				fmt.Println("- " + value.DatabaseName)
-			}
+			dbbackup.BackupRunner("")
 		},
 	}
 
@@ -55,8 +36,8 @@ func CommandLine() {
 	}
 
 	var cmdBackupScheduler = &cobra.Command{
-		Use:   "backup-scheduler [time]",
-		Short: "Run backup by scheduler : backup-scheduler [interval-minute]",
+		Use:   "backup-dbscheduler [time]",
+		Short: "Run backup by scheduler : backup-dbscheduler [interval-minute]",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			scheduler := cron.New()
@@ -74,7 +55,40 @@ func CommandLine() {
 		},
 	}
 
+	pathFile := model.PathFile{
+		PathDBJson: "databases.json",
+	}
+
+	var cmdBackupDBList = &cobra.Command{
+		Use:   "backup-dblist",
+		Short: "Show config databases : backup-dblist",
+		Run: func(cmd *cobra.Command, args []string) {
+			dbconfig.ListDatabaseConfig(pathFile)
+		},
+	}
+
+	var cmdBackupDBAdd = &cobra.Command{
+		Use:   "backup-dbadd [db_name] [db_host] [db_port] [db_username] [db_password]",
+		Short: "Add config databases : backup-dbadd [db_name] [db_host] [db_port] [db_username] [db_password]",
+		Args:  cobra.ExactArgs(5),
+		Run: func(cmd *cobra.Command, args []string) {
+			dbconfig.AddDatabaseConfig(args, pathFile)
+		},
+	}
+
+	var cmdBackupDBDelete = &cobra.Command{
+		Use:   "backup-dbdelete [db_name]",
+		Short: "Delete config databases : backup-dbdelete [db_name]",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			dbconfig.DeleteDatabaseConfig(args[0], pathFile)
+		},
+	}
+
+	rootCmd.AddCommand(cmdBackupDBAdd)
+	rootCmd.AddCommand(cmdBackupDBDelete)
 	rootCmd.AddCommand(cmdBackupDBList)
+	rootCmd.AddCommand(cmdBackupDB)
 	rootCmd.AddCommand(cmdBackupDBName)
 	rootCmd.AddCommand(cmdBackupScheduler)
 
