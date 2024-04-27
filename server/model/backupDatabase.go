@@ -27,7 +27,7 @@ func (cr *BckpDatabase) Create(db *gorm.DB) error {
 func (b *BckpDatabase) LatestBackup(db *gorm.DB) ([]BckpDatabase, error) {
 	var latestBackup []BckpDatabase
 
-	if err := db.Model(BckpDatabase{}).Where("deleted_at IS NULL").Select("created_at,database_name,file_name,file_path, MAX(id) as id").Order("created_at DESC").Group("database_name").Find(&latestBackup).Error; err != nil {
+	if err := db.Model(BckpDatabase{}).Where("deleted_at IS NULL").Select("MAX(created_at) as created_at, MAX(database_name) as database_name, MAX(file_name) as file_name, MAX(file_path) as file_path, MAX(id) as id").Order("created_at DESC").Group("database_name").Find(&latestBackup).Error; err != nil {
 		return nil, err
 	}
 
