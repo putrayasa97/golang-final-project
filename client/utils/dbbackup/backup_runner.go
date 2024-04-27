@@ -61,7 +61,7 @@ func BackupRunner(dbNamesStr string) {
 			logger.Error(mErr)
 		}
 
-		mErr = fmt.Sprintf("Database: %s Telah diproses \n", nameFile.NameFileZip)
+		mErr = fmt.Sprintf("Database: %s Telah diproses \n", nameFile.NameDatabaseFile)
 		logger.Info(mErr)
 	}
 

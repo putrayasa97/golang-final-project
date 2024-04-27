@@ -21,7 +21,7 @@ func uploadFileGrpc(pathFile *model.PathFile, fileName model.NameFile) (string, 
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		mErr = fmt.Sprintf("Error failed to dial server , Error : %v\n", err.Error())
+		mErr = fmt.Sprintf("Error uploadFileGrpc failed to dial server, Error : %v\n", err.Error())
 		return mErr, err
 	}
 	defer conn.Close()
@@ -30,14 +30,14 @@ func uploadFileGrpc(pathFile *model.PathFile, fileName model.NameFile) (string, 
 
 	file, err := os.Open(pathNameFileZip)
 	if err != nil {
-		mErr = fmt.Sprintf("Error to open file %s to zip , Error : %s\n", fileName.NameFileZip, err.Error())
+		mErr = fmt.Sprintf("Error uploadFileGrpc to open file with db %s to zip , Error : %s\n", fileName.NameDatabaseFile, err.Error())
 		return mErr, err
 	}
 	defer file.Close()
 
 	stream, err := client.UploadFile(context.Background())
 	if err != nil {
-		mErr = fmt.Sprintf("Error to upload file: %s  , Error : %s\n", fileName.NameFileZip, err.Error())
+		mErr = fmt.Sprintf("Error uploadFileGrpc to upload file with db %s, Error : %s\n", fileName.NameDatabaseFile, err.Error())
 		return mErr, err
 	}
 
@@ -45,7 +45,7 @@ func uploadFileGrpc(pathFile *model.PathFile, fileName model.NameFile) (string, 
 	for {
 		n, err := file.Read(buf)
 		if err != nil && err != io.EOF {
-			mErr = fmt.Sprintf("Error to read file:  %s  , Error : %s\n", fileName.NameFileZip, err.Error())
+			mErr = fmt.Sprintf("Error uploadFileGrpc to read file with db %s, Error : %s\n", fileName.NameDatabaseFile, err.Error())
 			return mErr, err
 		}
 		if n == 0 {
@@ -53,14 +53,14 @@ func uploadFileGrpc(pathFile *model.PathFile, fileName model.NameFile) (string, 
 		}
 
 		if err := stream.Send(&proto.FileChunk{NameFile: fileName.NameFileZip, NameDb: fileName.NameDatabaseFile, ZipFile: buf[:n]}); err != nil {
-			mErr = fmt.Sprintf("Error to send chunk  %s  , Error : %s\n", fileName.NameFileZip, err.Error())
+			mErr = fmt.Sprintf("Error uploadFileGrpc to send chunk with db %s, Error : %s\n", fileName.NameDatabaseFile, err.Error())
 			return mErr, err
 		}
 	}
 
 	response, err := stream.CloseAndRecv()
 	if err != nil {
-		mErr = fmt.Sprintf("Error to receive response:  %s  , Error : %s\n", fileName.NameFileZip, err.Error())
+		mErr = fmt.Sprintf("Error uploadFileGrpc to receive response with db %s, Error : %s\n", fileName.NameDatabaseFile, err.Error())
 		return mErr, err
 	}
 
