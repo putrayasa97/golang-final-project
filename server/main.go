@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net"
 	"os"
@@ -9,8 +8,7 @@ import (
 	"service/backup/databases/proto"
 	"service/backup/databases/server/config"
 	"service/backup/databases/server/controllers"
-	"service/backup/databases/server/model"
-	"service/backup/databases/server/utils"
+	servicegrpc "service/backup/databases/server/service_grpc"
 	"syscall"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,60 +22,6 @@ func InitEnv() {
 	if err != nil {
 		logrus.Warn("Cannot load env file, using system env")
 	}
-}
-
-type FileUpload struct {
-	proto.FileUploadServer
-}
-
-func (s *FileUpload) UploadFile(stream proto.FileUpload_UploadFileServer) error {
-	firstChunk, err := stream.Recv()
-	if err != nil {
-		return err
-	}
-	nameFile := firstChunk.GetNameFile()
-	nameBD := firstChunk.GetNameDb()
-
-	fileName := "upload/" + nameFile
-
-	file, err := os.Create(fileName)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	if _, err := file.Write(firstChunk.GetZipFile()); err != nil {
-		return err
-	}
-
-	for {
-		chunk, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		if _, err := file.Write(chunk.GetZipFile()); err != nil {
-			return err
-		}
-	}
-
-	_, errCreateBckpDatabse := utils.InsertBckpDatabase(model.BckpDatabase{
-		DatabaseName: nameBD,
-		FileName:     nameFile,
-		FilePath:     fileName,
-	})
-
-	if errCreateBckpDatabse != nil {
-		return errCreateBckpDatabse
-	}
-
-	if err := stream.SendAndClose(&proto.UploadStatus{Success: true}); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func runFiberServer() {
@@ -108,7 +52,7 @@ func runGRPCServer() {
 	}
 
 	s := grpc.NewServer()
-	proto.RegisterFileUploadServer(s, &FileUpload{})
+	proto.RegisterFileUploadServer(s, &servicegrpc.FileUpload{})
 	log.Println("Server started at :50051")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
