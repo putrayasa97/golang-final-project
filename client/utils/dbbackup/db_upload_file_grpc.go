@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"service/backup/databases/client/model"
-	"service/backup/databases/client/utils/logger"
 	"service/backup/databases/proto"
 
 	"google.golang.org/grpc"
@@ -58,14 +57,11 @@ func uploadFileGrpc(pathFile *model.PathFile, fileName model.NameFile) (string, 
 		}
 	}
 
-	response, err := stream.CloseAndRecv()
+	_, err = stream.CloseAndRecv()
 	if err != nil {
 		mErr = fmt.Sprintf("Error uploadFileGrpc to receive response with db %s, Error : %s\n", fileName.NameDatabaseFile, err.Error())
 		return mErr, err
 	}
-
-	mErr = fmt.Sprintf("File uploaded successfully: %t", response.Success)
-	logger.Info(mErr)
 
 	return mErr, nil
 }
