@@ -9,11 +9,14 @@ import (
 	"service/backup/databases/server/utils"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
+
+var loc, _ = time.LoadLocation("Asia/Makassar")
 
 func RouteBckpDatabase(app *fiber.App) {
 	app.Get("/generate-token", GeneratToken)
@@ -141,7 +144,7 @@ func GetAllLatestBackupDatabase(c *fiber.Ctx) error {
 			"latest_backup": map[string]interface{}{
 				"id":        latestBackup.ID,
 				"file_name": latestBackup.FileName,
-				"timestamp": latestBackup.CreatedAt.Format("2006-01-02 15:04:05"),
+				"timestamp": latestBackup.CreatedAt.In(loc).Format("2006-01-02 15:04:05 MST"),
 			},
 		})
 	}
@@ -179,7 +182,7 @@ func GetHistoryBackupByName(c *fiber.Ctx) error {
 		result = append(result, map[string]interface{}{
 			"id":        historie.ID,
 			"file_name": historie.FileName,
-			"timestamp": historie.CreatedAt.Format("2006-01-02 15:04:05"),
+			"timestamp": historie.CreatedAt.In(loc).Format("2006-01-02 15:04:05 MST"),
 		})
 	}
 
